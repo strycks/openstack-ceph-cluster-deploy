@@ -1,0 +1,14 @@
+service_type: ingress
+service_id: rgw.myrgw
+placement:
+  hosts:
+    - ceph-node4
+    - ceph-node5
+    - ceph-node6
+spec:
+  backend_service: rgw.myrgw
+  virtual_ip: 10.10.30.3/24
+  frontend_port: 8080
+  monitor_port: 1967
+  virtual_interface_networks:
+    - 10.10.30.0/24

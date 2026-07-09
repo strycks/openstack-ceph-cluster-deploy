@@ -1,0 +1,16 @@
+service_type: osd
+service_id: tier-ssd
+unmanaged: false
+placement:
+  hosts:
+    - ceph-node4
+    - ceph-node5
+    - ceph-node6
+    - ceph-node7
+    - ceph-node8
+    - ceph-node9
+    - ceph-node10
+spec:
+  data_devices:
+    size: "20GB"
+    rotational: 0

@@ -1,0 +1,4 @@
+# udev rules to set rotational=0 for SSD devices
+{% for serial in ssd_serials %}
+SUBSYSTEM=="block", ENV{ID_SERIAL}=="{{ serial }}", ATTR{queue/rotational}="0"
+{% endfor %}

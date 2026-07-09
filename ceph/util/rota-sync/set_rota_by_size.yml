@@ -1,0 +1,79 @@
+---
+- name: Set udev rotational flag based on disk size (Hyper-V fix)
+  hosts: ceph-node
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    # ----- XÓA CÁC FILE RULES CŨ -----
+    - name: Find existing udev rules files with prefix "99-ceph-"
+      find:
+        paths: /etc/udev/rules.d/
+        patterns: "99-ceph-*.rules"
+      register: old_udev_rules
+
+    - name: Remove old udev rules files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ old_udev_rules.files }}"
+      when: old_udev_rules.files | length > 0
+
+    # ----- TẠO RULES MỚI DỰA TRÊN KÍCH THƯỚC -----
+    - name: Generate udev rules for all non-sda disks by byte size
+      shell: |
+        set -e
+        RULE_FILE="/etc/udev/rules.d/99-ceph-rota.rules"
+        > "$RULE_FILE"
+
+        # Lấy NAME và SIZE (byte) của các ổ disk (loại trừ sda)
+        lsblk -b -n -o NAME,SIZE,TYPE | awk '$3=="disk" && $1!="sda" {print $1,$2}' | while read -r name size; do
+          serial=$(udevadm info --query=property --name="/dev/$name" | grep '^ID_SERIAL=' | cut -d= -f2)
+          [ -z "$serial" ] && continue
+
+          # Quy đổi sang GB
+          gb=$((size / 1024 / 1024 / 1024))
+
+          # Ngưỡng: nếu <= 25GB => SSD, nếu >= 40GB => HDD
+          if [ "$gb" -le 25 ]; then
+            rota=0
+          else
+            rota=1
+          fi
+
+          echo "SUBSYSTEM==\"block\", ENV{ID_SERIAL}==\"$serial\", ATTR{queue/rotational}=\"$rota\"" >> "$RULE_FILE"
+        done
+
+        udevadm control --reload-rules
+        udevadm trigger --type=subsystems --action=add
+        udevadm trigger --type=devices --action=add
+      args:
+        executable: /bin/bash
+      register: generate_result
+      changed_when: true
+
+    # ----- HIỂN THỊ NỘI DUNG RULES -----
+    - name: Show generated udev rules
+      shell: cat /etc/udev/rules.d/99-ceph-rota.rules 2>/dev/null || echo "No rules generated"
+      register: rule_content
+      changed_when: false
+
+    - name: Display rule content
+      debug:
+        var: rule_content.stdout_lines
+
+    # ----- KIỂM TRA KẾT QUẢ -----
+    - name: Verify rotational flag for disks (sd[b-z])
+      shell: |
+        for dev in /dev/sd[b-z]; do
+          if [ -b "$dev" ]; then
+            echo -n "$dev: "
+            cat /sys/block/$(basename $dev)/queue/rotational
+          fi
+        done
+      register: verify_result
+      changed_when: false
+
+    - name: Show verification result
+      debug:
+        var: verify_result.stdout_lines

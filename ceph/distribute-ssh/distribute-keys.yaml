@@ -1,0 +1,10 @@
+---
+- name: SSH support for all nodes inside cluster
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: ssh-copy
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"

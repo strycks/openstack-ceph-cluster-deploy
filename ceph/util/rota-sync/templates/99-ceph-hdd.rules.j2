@@ -1,0 +1,4 @@
+# udev rules to set rotational=1 for HDD devices
+{% for name in hdd_names %}
+KERNEL=="{{ name }}", ATTR{queue/rotational}="1"
+{% endfor %}

@@ -1,0 +1,6 @@
+[client.manila]
+	key = AQDDBkVqoaiTKxAAVMRptvVgwWWqpje4RJ3gCw==
+	caps mds = "allow *"
+	caps mgr = "allow rw"
+	caps mon = "allow r, allow command \"auth del\" with entity prefix client.manila., allow command \"auth caps\" with entity prefix client.manila., allow command \"auth get\" with entity prefix client.manila., allow command \"auth get-or-create\" with entity prefix client.manila."
+	caps osd = "allow rw pool=cephfs-data-ssd, allow rw pool=cephfs-meta, allow rw pool=manila_data"
