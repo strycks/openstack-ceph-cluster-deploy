@@ -99,27 +99,27 @@ resource "libvirt_volume" "root" {
 resource "libvirt_volume" "osd_ssd_5g" {
   for_each = { for k, v in var.nodes : k => v if v.role == "ceph" }
 
-  name = "${var.name_prefix}-${each.key}-osd-ssd1.qcow2"
-  pool = libvirt_pool.ssd.name
-  size = var.disk_size_ssd_5g
+  name   = "${var.name_prefix}-${each.key}-osd-ssd1.qcow2"
+  pool   = libvirt_pool.ssd.name
+  size   = var.disk_size_ssd_5g
   format = "qcow2"
 }
 
 resource "libvirt_volume" "osd_ssd_10g" {
-  for_each = { for k, v in var.nodes : k => v if v.role == "ceph"}
+  for_each = { for k, v in var.nodes : k => v if v.role == "ceph" }
 
-  name = "${var.name_prefix}-${each.key}-osd-ssd2.qcow2"
-  pool = libvirt_pool.ssd.name
-  size = var.disk_size_ssd_10g
+  name   = "${var.name_prefix}-${each.key}-osd-ssd2.qcow2"
+  pool   = libvirt_pool.ssd.name
+  size   = var.disk_size_ssd_10g
   format = "qcow2"
 }
 
 resource "libvirt_volume" "osd_hdd_50g" {
-  for_each = { for k, v in var.nodes : k => v if v.role == "ceph"}
+  for_each = { for k, v in var.nodes : k => v if v.role == "ceph" }
 
-  name = "${var.name_prefix}-${each.key}-osd-hdd1.qcow2"
-  pool = libvirt_pool.hdd.name
-  size = var.disk_size_hdd_50g
+  name   = "${var.name_prefix}-${each.key}-osd-hdd1.qcow2"
+  pool   = libvirt_pool.hdd.name
+  size   = var.disk_size_hdd_50g
   format = "qcow2"
 }
 
@@ -141,7 +141,7 @@ resource "libvirt_cloudinit_disk" "init" {
   )
 
   network_config = templatefile(
-    each.value.role == "openstack" ? "${path.module}/cloud-init/openstack/network-config.yaml" : "${path.module}/cloud-init/ceph/network-config.yaml",
+    each.value.role == "openstack" ? "${path.module}/cloud-init/openstack/net-config.yaml" : "${path.module}/cloud-init/ceph/net-config.yaml",
     {
       ip_idx = each.value.role == "ceph" ? tonumber(replace(each.key, "ceph-node", "")) + 20 : 0 # we will not use it in openstack
     }

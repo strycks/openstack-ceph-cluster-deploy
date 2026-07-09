@@ -6,4 +6,5 @@ OpenStack External Network: `10.10.4.10/24`
 OpenStack Neutron Network: `10.10.5.0/24` Neutron-managed
 
 Remember to turn off CoW on image pools:
-`sudo chattr +C /var/lib/libvirt/images`
+```sudo chattr +C /var/lib/libvirt/images```  
+Also chown and chmod qemu on mountpoint.

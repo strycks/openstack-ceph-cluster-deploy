@@ -19,12 +19,12 @@ variable "nodes" {
   }))
   default = {
     "openstack-node1" = { vcpu = 8, memory_mib = 16384, role = "openstack" }
-    "ceph-node1" = { vcpu = 4, memory_mib = 4096, role = "ceph"}
-    "ceph-node2" = { vcpu = 4, memory_mib = 4096, role = "ceph"}
-    "ceph-node3" = { vcpu = 4, memory_mib = 4096, role = "ceph"}
-    "ceph-node4" = { vcpu = 4, memory_mib = 4096, role = "ceph"}
-    "ceph-node5" = { vcpu = 4, memory_mib = 4096, role = "ceph"}
-    "ceph-node6" = { vcpu = 4, memory_mib = 4096, role = "ceph"}
+    "ceph-node1"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node2"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node3"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node4"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node5"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node6"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
   }
 }
 
@@ -32,26 +32,26 @@ variable "nodes" {
 
 variable "pool_ssd" {
   description = "Pool placed on SSD."
-  type = string
-  default = "default" # Main pool
+  type        = string
+  default     = "default" # Main pool
 }
 
 variable "pool_ssd_path" {
   description = "SSD Pool path."
-  type = string
-  default = "/var/lib/libvirt/images"
+  type        = string
+  default     = "/var/lib/libvirt/images"
 }
 
 variable "pool_hdd" {
   description = "Pool placed on HDD."
-  type = string
-  default = "hdd-pool"
+  type        = string
+  default     = "hdd-pool"
 }
 
 variable "pool_hdd_path" {
   description = "HDD Pool path."
-  type = string
-  default = "/mnt/hdd-linux/vms-storage"
+  type        = string
+  default     = "/mnt/hdd-linux/vms-storage"
 }
 
 // Disk size
@@ -104,36 +104,36 @@ variable "ssh_public_key" {
 
 variable "net_mgmt" {
   description = "Management Network."
-  type    = string
-  default = "mgmt-net"
+  type        = string
+  default     = "mgmt-net"
 }
 
 variable "net_os_internal" {
   description = "Internal Network for OpenStack."
-  type    = string
-  default = "os-internal-net"
+  type        = string
+  default     = "os-internal-net"
 }
 
 variable "net_os_tenant" {
   description = "Tenant Network managed by Neutron."
-  type    = string
-  default = "os-tenant-net"
+  type        = string
+  default     = "os-tenant-net"
 }
 
 variable "net_os_external" {
   description = "External Network for OpenStack."
-  type    = string
-  default = "os-external-net"
+  type        = string
+  default     = "os-external-net"
 }
 
 variable "net_ceph_public" {
   description = "Public Network for Ceph."
-  type    = string
-  default = "ceph-public-net"
+  type        = string
+  default     = "ceph-public-net"
 }
 
 variable "net_ceph_cluster" {
   description = "Cluster Network for Ceph."
-  type    = string
-  default = "ceph-cluster-net"
+  type        = string
+  default     = "ceph-cluster-net"
 }
