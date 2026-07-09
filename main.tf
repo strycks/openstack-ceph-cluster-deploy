@@ -31,6 +31,49 @@ resource "libvirt_pool" "hdd" {
   }
 }
 
+# --- Network
+
+resource "libvirt_network" "mgmt" {
+  name      = var.net_mgmt
+  addresses = ["10.10.250.0/24"]
+  dhcp {
+    enabled = true
+  }
+}
+
+resource "libvirt_network" "ceph_public" {
+  name      = var.net_ceph_public
+  mode      = "none"
+  addresses = ["10.10.2.0/24"]
+}
+
+resource "libvirt_network" "os_internal" {
+  name      = var.net_os_internal
+  mode      = "none"
+  addresses = ["10.10.3.0/24"]
+}
+
+resource "libvirt_network" "os_external" {
+  name      = var.net_os_external
+  mode      = "none"
+  addresses = ["10.10.4.0/24"]
+}
+
+resource "libvirt_network" "os_tenant" {
+  name      = var.net_os_tenant
+  mode      = "nat"
+  addresses = ["10.10.5.0/24"]
+  dhcp {
+    enabled = false
+  }
+}
+
+resource "libvirt_network" "ceph_cluster" {
+  name      = var.net_ceph_cluster
+  mode      = "none"
+  addresses = ["10.10.6.0/24"]
+}
+
 # --- Base cloud image -------------------------------------------------------
 # Pull the official Ubuntu 24.04 (Noble) cloud image once as the immutable
 # backing volume. Each node disk is a copy-on-write clone of this base.
