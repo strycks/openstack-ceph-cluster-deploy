@@ -1,0 +1,13 @@
+version: 2
+ethernets:
+  ens3: # mgmt
+    dhcp4: true
+    dhcp6: false
+  ens4: # ceph pub
+    dhcp4: false
+    dhcp6: false
+    addresses: ["10.10.2.${ip_idx}/24"]
+  ens5: # ceph priv
+    dhcp4: false
+    dhcp6: false
+    addresses: ["10.10.6.${ip_idx}/24"]
