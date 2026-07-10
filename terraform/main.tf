@@ -206,12 +206,14 @@ resource "libvirt_domain" "vm" {
 
   disk {
     volume_id = libvirt_volume.root[each.key].id
+    scsi      = "true"
   }
 
   dynamic "disk" {
     for_each = each.value.role == "ceph" ? [1] : []
     content {
       volume_id = libvirt_volume.osd_ssd_5g[each.key].id
+      scsi      = "true"
     }
   }
 
@@ -219,6 +221,7 @@ resource "libvirt_domain" "vm" {
     for_each = each.value.role == "ceph" ? [1] : []
     content {
       volume_id = libvirt_volume.osd_ssd_10g[each.key].id
+      scsi      = "true"
     }
   }
 
@@ -227,6 +230,26 @@ resource "libvirt_domain" "vm" {
     content {
       volume_id = libvirt_volume.osd_hdd_50g[each.key].id
     }
+  }
+
+  xml {
+    xslt = <<-EOF
+    <?xml version="1.0" ?>
+    <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+      <xsl:template match="node() | @*">
+        <xsl:copy>
+          <xsl:apply-templates select="node() | @*"/>
+        </xsl:copy>
+      </xsl:template>
+
+      <xsl:template match="target[@bus='scsi']">
+        <target>
+          <xsl:copy-of select="@*"/>
+          <xsl:attribute name="rotation_rate">1</xsl:attribute>
+        </target>
+      </xsl:template>
+    </xsl:stylesheet>
+    EOF
   }
 
   console {
