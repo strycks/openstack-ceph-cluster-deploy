@@ -36,6 +36,7 @@ resource "libvirt_pool" "hdd" {
 resource "libvirt_network" "mgmt" {
   name      = var.net_mgmt
   addresses = ["10.10.250.0/24"]
+  autostart = true
   dhcp {
     enabled = true
   }
@@ -44,24 +45,28 @@ resource "libvirt_network" "mgmt" {
 resource "libvirt_network" "ceph_public" {
   name      = var.net_ceph_public
   mode      = "none"
+  autostart = true
   addresses = ["10.10.2.0/24"]
 }
 
 resource "libvirt_network" "os_internal" {
   name      = var.net_os_internal
   mode      = "none"
+  autostart = true
   addresses = ["10.10.3.0/24"]
 }
 
 resource "libvirt_network" "os_external" {
   name      = var.net_os_external
   mode      = "none"
+  autostart = true
   addresses = ["10.10.4.0/24"]
 }
 
 resource "libvirt_network" "os_tenant" {
   name      = var.net_os_tenant
   mode      = "nat"
+  autostart = true
   addresses = ["10.10.5.0/24"]
   dhcp {
     enabled = false
@@ -71,6 +76,7 @@ resource "libvirt_network" "os_tenant" {
 resource "libvirt_network" "ceph_cluster" {
   name      = var.net_ceph_cluster
   mode      = "none"
+  autostart = true
   addresses = ["10.10.6.0/24"]
 }
 
@@ -234,4 +240,13 @@ resource "libvirt_domain" "vm" {
     listen_type = "address"
     autoport    = true
   }
+
+  depends_on = [
+    libvirt_network.mgmt,
+    libvirt_network.os_internal,
+    libvirt_network.os_external,
+    libvirt_network.os_tenant,
+    libvirt_network.ceph_public,
+    libvirt_network.ceph_cluster
+  ]
 }
