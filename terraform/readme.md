@@ -8,3 +8,5 @@ OpenStack Neutron Network: `10.10.5.0/24` Neutron-managed
 Remember to turn off CoW on image pools:
 ```sudo chattr +C /var/lib/libvirt/images```  
 Also chown and chmod qemu on mountpoint.
+
+For convenient, edit ssh config to ssh with alias.

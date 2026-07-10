@@ -138,7 +138,7 @@ resource "libvirt_cloudinit_disk" "init" {
   pool = libvirt_pool.ssd.name
 
   user_data = templatefile(
-    each.value.role == "openstack" ? "${path.module}/cloud-init/openstack/user-data.yaml" : "${path.module}/cloud-init/ceph/user-data.yaml",
+    each.value.role == "openstack" ? "${path.module}/cloud-init/openstack/user-data.tftpl" : "${path.module}/cloud-init/ceph/user-data.tftpl",
     {
       hostname       = each.key
       ssh_username   = var.ssh_username
@@ -147,7 +147,7 @@ resource "libvirt_cloudinit_disk" "init" {
   )
 
   network_config = templatefile(
-    each.value.role == "openstack" ? "${path.module}/cloud-init/openstack/net-config.yaml" : "${path.module}/cloud-init/ceph/net-config.yaml",
+    each.value.role == "openstack" ? "${path.module}/cloud-init/openstack/net-config.tftpl" : "${path.module}/cloud-init/ceph/net-config.tftpl",
     {
       ip_idx = each.value.role == "ceph" ? tonumber(replace(each.key, "ceph-node", "")) + 20 : 0 # we will not use it in openstack
     }
