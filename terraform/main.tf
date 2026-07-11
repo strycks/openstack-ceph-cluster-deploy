@@ -158,10 +158,11 @@ resource "libvirt_cloudinit_disk" "init" {
 resource "libvirt_domain" "vm" {
   for_each = var.nodes
 
-  name      = "${var.name_prefix}-${each.key}"
-  memory    = each.value.memory_mib
-  vcpu      = each.value.vcpu
-  cloudinit = libvirt_cloudinit_disk.init[each.key].id
+  name       = "${var.name_prefix}-${each.key}"
+  memory     = each.value.memory_mib
+  vcpu       = each.value.vcpu
+  cloudinit  = libvirt_cloudinit_disk.init[each.key].id
+  qemu_agent = true
 
   cpu {
     mode = "host-passthrough"
