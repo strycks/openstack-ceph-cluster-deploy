@@ -1,0 +1,4 @@
+# OpenStack Ceph Cluster Deployment
+Start by running `terraform apply` to set up VMs.
+After that, run ansible playbooks to bootstrap ceph cluster.
+OpenStack playbooks are WIP.
