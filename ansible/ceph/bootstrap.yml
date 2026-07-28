@@ -3,10 +3,15 @@
   become: true
   gather_facts: true
   tasks:
+    - name: Check whether this host is already bootstrapped. This is a temporary fix, because cephadm_bootstrap is not idempotent!
+      ansible.builtin.stat:
+        path: /etc/ceph/ceph.conf
+      register: ceph_conf_stat
     - name: Run cephadm bootstrap
       ceph.automation.cephadm_bootstrap:
         mon_ip: "{{ public_ip }}"
         cluster_network: "{{ net_ceph_cluster }}"
+      when: not ceph_conf_stat.stat.exists
       register: bootstrap_result
     - name: Show bootstrap result
       debug:

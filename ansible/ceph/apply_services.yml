@@ -1,0 +1,46 @@
+- name: Apply essential services
+  hosts: ceph_admin
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Apply mon services
+      ceph.automation.ceph_orch_apply:
+        spec: |
+          service_type: mon
+          service_name: mon
+          placement:
+            label: "mon"
+    - name: Apply mgr services
+      ceph.automation.ceph_orch_apply:
+        spec: |
+          service_type: mgr
+          service_name: mgr
+          placement:
+            label: "mgr"
+    - name: Apply tier-hdd osd services
+      ceph.automation.ceph_orch_apply:
+        spec: |
+          service_type: osd
+          service_id: tier-hdd
+          unmanaged: false
+          placement:
+            label: "osd"
+          spec:
+            data_devices:
+              rotational: 1
+            db_devices:
+              size: "5GB"
+              rotational: 0
+            block_db_size: "4.9GB"
+    - name: Apply tier-ssd osd services
+      ceph.automation.ceph_orch_apply:
+        spec: |
+          service_type: osd
+          service_id: tier-ssd
+          unmanaged: false
+          placement:
+            label: "osd"
+          spec:
+            data_devices:
+              size: "10GB"
+              rotational: 0
