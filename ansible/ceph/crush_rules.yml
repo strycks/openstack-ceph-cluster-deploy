@@ -1,0 +1,51 @@
+---
+- name: Create CRUSH rules and EC profile
+  hosts: ceph_admin
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Create ssd EC erasure-code profile
+      ceph.automation.ceph_ec_profile:
+        name: ssd-ec42
+        k: "4"
+        m: "2"
+        crush_device_class: ssd
+        crush_failure_domain: host
+        force: true
+
+    - name: Create ssd EC erasure CRUSH rule
+      ceph.automation.ceph_crush_rule:
+        name: ssd-ec42
+        rule_type: erasure
+        profile: ssd-ec42
+
+    - name: Create replicated CRUSH rule for HDD
+      ceph.automation.ceph_crush_rule:
+        name: replicated_hdd
+        rule_type: replicated
+        bucket_root: default
+        bucket_type: host
+        device_class: hdd
+
+    - name: Create replicated CRUSH rule for SSD
+      ceph.automation.ceph_crush_rule:
+        name: replicated_ssd
+        rule_type: replicated
+        bucket_root: default
+        bucket_type: host
+        device_class: ssd
+
+    - name: Create hdd EC erasure-code profile
+      ceph.automation.ceph_ec_profile:
+        name: hdd-ec42
+        k: "4"
+        m: "2"
+        crush_device_class: hdd
+        crush_failure_domain: host
+        force: true
+
+    - name: Create hdd EC erasure CRUSH rule
+      ceph.automation.ceph_crush_rule:
+        name: hdd-ec42
+        rule_type: erasure
+        profile: hdd-ec42

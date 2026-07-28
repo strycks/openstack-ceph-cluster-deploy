@@ -1,0 +1,29 @@
+---
+- name: Create RGW pools
+  hosts: ceph_admin
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Create rgw-data erasure-coded pool
+      ceph.automation.ceph_pool:
+        name: rgw-data
+        pool_type: erasure
+        rule_name: hdd-ec42
+        erasure_profile: hdd-ec42
+        application: rgw
+
+    - name: Create rgw-metadata pool
+      ceph.automation.ceph_pool:
+        name: rgw-metadata
+        pool_type: replicated
+        size: "3"
+        rule_name: replicated_ssd
+        application: rgw
+
+    - name: Create rgw-index pool
+      ceph.automation.ceph_pool:
+        name: rgw-index
+        pool_type: replicated
+        size: "3"
+        rule_name: replicated_ssd
+        application: rgw

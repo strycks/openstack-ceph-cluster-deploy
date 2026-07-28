@@ -1,0 +1,45 @@
+---
+- name: Create RBD pools
+  hosts: ceph_admin
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Create volumes-hdd pool
+      ceph.automation.ceph_pool:
+        name: volumes-hdd
+        pool_type: replicated
+        size: "3"
+        rule_name: replicated_hdd
+        application: rbd
+
+    - name: Create images pool
+      ceph.automation.ceph_pool:
+        name: images
+        pool_type: replicated
+        size: "3"
+        rule_name: replicated_hdd
+        application: rbd
+
+    - name: Create vms pool
+      ceph.automation.ceph_pool:
+        name: vms
+        pool_type: replicated
+        size: "3"
+        rule_name: replicated_hdd
+        application: rbd
+
+    - name: Create volumes-ssd erasure-coded pool
+      ceph.automation.ceph_pool:
+        name: volumes-ssd
+        pool_type: erasure
+        rule_name: ssd-ec42
+        erasure_profile: ssd-ec42
+        application: rbd
+
+    - name: Create volumes-ssd-meta pool
+      ceph.automation.ceph_pool:
+        name: volumes-ssd-meta
+        pool_type: replicated
+        size: "3"
+        rule_name: replicated_ssd
+        application: rbd
