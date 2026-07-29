@@ -1,4 +1,3 @@
----
 - name: Create CRUSH rules and EC profile
   hosts: ceph_admin
   become: true

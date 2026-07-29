@@ -69,6 +69,6 @@
       ceph.automation.ceph_orch_apply:
         spec: |
           service_type: mds
-          service_id: mycephfs
+          service_id: mymds
           placement:
             label: "mds"
