@@ -24,3 +24,11 @@
         name: mycephfs
         metadata: cephfs-meta
         data: cephfs-data-ssd
+
+    - name: Apply CephFS MDS service
+      ceph.automation.ceph_orch_apply:
+        spec: |
+          service_type: mds
+          service_id: mymds
+          placement:
+            label: "mds"
