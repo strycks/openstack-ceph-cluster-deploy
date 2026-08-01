@@ -70,7 +70,7 @@
     - name: Copy all-in-one inventory shipped with kolla-ansible
       ansible.builtin.copy:
         src: "{{ kolla_home }}/kolla-venv/share/kolla-ansible/ansible/inventory/all-in-one"
-        dest: "{{ kolla_home }}"
+        dest: "/etc/kolla/all-in-one"
         owner: ubuntu
         group: ubuntu
         remote_src: true
