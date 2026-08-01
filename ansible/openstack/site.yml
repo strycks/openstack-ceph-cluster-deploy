@@ -1,0 +1,2 @@
+- name: OpenStack preflight - Setup kolla-ansible
+  ansible.builtin.import_playbook: preflight.yml

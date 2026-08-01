@@ -1,0 +1,87 @@
+- name: Install kolla-ansible
+  hosts: openstack_admin
+  gather_facts: true
+  become: false
+  vars:
+    kolla_home: "/home/{{ ansible_user }}"
+  tasks:
+    - name: Install dependencies
+      apt:
+        name: [git, python3-dev, libffi-dev, gcc, libssl-dev, libdbus-glib-1-dev, python3-venv]
+        state: present
+        update_cache: true
+      become: true
+
+    - name: Upgrade pip in the virtual environment
+      ansible.builtin.pip:
+        name: pip
+        state: latest
+        virtualenv: "{{ kolla_home }}/kolla-venv"
+        virtualenv_command: python3 -m venv
+      become: false
+
+    - name: Install kolla-ansible, openstackclient and required packages
+      ansible.builtin.pip:
+        name:
+          - git+https://opendev.org/openstack/kolla-ansible@master
+          - python-openstackclient
+          - docker
+          - pkgconfig
+          - dbus-python
+        virtualenv: "{{ kolla_home }}/kolla-venv"
+        virtualenv_command: python3 -m venv
+        state: present
+      become: false
+
+    - name: Create /etc/kolla owned by ubuntu
+      ansible.builtin.file:
+        path: /etc/kolla
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: "0755"
+
+    # For idempotency
+    - name: Check if passwords.yml exists
+      ansible.builtin.stat:
+        path: /etc/kolla/passwords.yml
+      register: passwords_file
+      become: false
+
+    - name: Copy shipped passwords.yml if missing
+      ansible.builtin.copy:
+        src: "{{ kolla_home }}/kolla-venv/share/kolla-ansible/etc_examples/kolla/passwords.yml"
+        dest: /etc/kolla/passwords.yml
+        owner: ubuntu
+        group: ubuntu
+        mode: "0640"
+        remote_src: true
+      when: not passwords_file.stat.exists
+      become: false
+
+    - name: Copy globals.yml from repo
+      ansible.builtin.copy:
+        src: globals.yml
+        dest: /etc/kolla/globals.yml
+        owner: ubuntu
+        group: ubuntu
+      become: false
+
+    - name: Copy all-in-one inventory shipped with kolla-ansible
+      ansible.builtin.copy:
+        src: "{{ kolla_home }}/kolla-venv/share/kolla-ansible/ansible/inventory/all-in-one"
+        dest: "{{ kolla_home }}"
+        owner: ubuntu
+        group: ubuntu
+        remote_src: true
+      become: false
+
+    - name: Install Ansible Galaxy requirements
+      ansible.builtin.shell:
+        cmd: ". {{ kolla_home }}/kolla-venv/bin/activate && kolla-ansible install-deps"
+      become: false
+
+    - name: Generate passwords
+      ansible.builtin.shell:
+        cmd: ". {{ kolla_home }}/kolla-venv/bin/activate && kolla-genpwd"
+      become: false
