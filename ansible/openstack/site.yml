@@ -3,3 +3,6 @@
 
 - name: OpenStack deployment
   ansible.builtin.import_playbook: deploy.yml
+
+- name: Ceph Integration
+  ansible.builtin.import_playbook: ceph-integrate.yml
