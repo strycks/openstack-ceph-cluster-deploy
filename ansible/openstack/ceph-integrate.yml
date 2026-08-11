@@ -41,12 +41,29 @@
       loop_control:
         label: "{{ item }}"
 
+    - name: Read the cluster ceph.conf
+      ansible.builtin.slurp:
+        src: /etc/ceph/ceph.conf
+      register: ceph_conf_src
+
+    # This exists because we have to specify data pool for erasure-coded pools.
+    # kolla-ansible cannot parse indented conf keys, so leading whitespace is stripped
+    - name: Build the ceph.conf variants for kolla
+      ansible.builtin.set_fact:
+        ceph_conf_content: "{{ ceph_conf_src.content | b64decode | regex_replace('(?m)^\\s+', '') }}"
+        ceph_conf_ssd_content: |
+          {{ ceph_conf_src.content | b64decode | regex_replace('(?m)^\\s+', '') }}
+          [client.cinder]
+          rbd default data pool = volumes-ssd
+
 - name: Distribute Ceph keyrings to the OpenStack node
   hosts: openstack_admin
   become: true
   gather_facts: false
   vars:
     ceph_keyrings: "{{ hostvars[groups['ceph_admin'][0]]['ceph_client_keyrings']['results'] }}"
+    ceph_conf_base: "{{ hostvars[groups['ceph_admin'][0]]['ceph_conf_content'] }}"
+    ceph_conf_ssd: "{{ hostvars[groups['ceph_admin'][0]]['ceph_conf_ssd_content'] }}"
     # kolla expects <cluster>.client.<user>.keyring, cinder keyrings live in the cinder-volume subdir
     keyring_targets:
       - { client: glance, path: glance/ceph.client.glance.keyring }
@@ -74,3 +91,36 @@
       loop: "{{ keyring_targets }}"
       loop_control:
         label: "{{ item.path }}"
+
+    - name: Copy the base ceph.conf into the kolla config directories
+      ansible.builtin.copy:
+        content: "{{ ceph_conf_base }}"
+        dest: "/etc/kolla/config/{{ item }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0640"
+      loop:
+        - glance/ceph.conf
+        - nova/ceph.conf
+        - manila/ceph.conf
+        - cinder/cinder-volume/ceph-hdd.conf
+
+    # the ssd backend writes to the EC pool volumes-ssd, metadata stays in volumes-ssd-meta
+    - name: Copy the ssd ceph.conf with the EC data pool override
+      ansible.builtin.copy:
+        content: "{{ ceph_conf_ssd }}"
+        dest: /etc/kolla/config/cinder/cinder-volume/ceph-ssd.conf
+        owner: ubuntu
+        group: ubuntu
+        mode: "0640"
+
+    # kolla does not set this, cinder, nova, ,,. needs it to clone glance images (CoW) instead of downloading them
+    - name: Enable direct image URLs for glance
+      ansible.builtin.copy:
+        content: |
+          [DEFAULT]
+          show_image_direct_url = True
+        dest: /etc/kolla/config/glance/glance-api.conf
+        owner: ubuntu
+        group: ubuntu
+        mode: "0640"
