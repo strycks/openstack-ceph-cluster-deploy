@@ -149,6 +149,7 @@ resource "libvirt_cloudinit_disk" "init" {
   network_config = templatefile(
     each.value.role == "openstack" ? "${path.module}/cloud-init/openstack/net-config.tftpl" : "${path.module}/cloud-init/ceph/net-config.tftpl",
     {
+      ip_idx = 0
       ip_idx = each.value.role == "ceph" ? tonumber(replace(each.key, "ceph-node", "")) + 20 : 0 # we will not use it in openstack
     }
   )
@@ -177,11 +178,8 @@ resource "libvirt_domain" "vm" {
     network_name = var.net_ceph_public
   }
 
-  dynamic "network_interface" {
-    for_each = each.value.role == "openstack" ? [1] : []
-    content {
-      network_name = var.net_os_internal
-    }
+  network_interface {
+    network_name = var.net_os_internal
   }
 
   dynamic "network_interface" {

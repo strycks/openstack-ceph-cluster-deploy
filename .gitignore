@@ -44,5 +44,7 @@ terraform.rc
 # planout
 
 AGENTS.md
-
 *.keyring
+inventory.ini
+chat_history.json
+tfplan

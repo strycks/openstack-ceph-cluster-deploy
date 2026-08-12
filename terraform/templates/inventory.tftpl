@@ -8,9 +8,9 @@ ${node.name} ansible_host=${node.mgmt_ip} internal_ip=${node.internal_ip} extern
 [ceph]
 %{ for i, node in ceph_nodes ~}
 %{ if i < 3 ~}
-${node.name} ansible_host=${node.mgmt_ip} public_ip=${node.public_ip} cluster_ip=${node.cluster_ip} labels="['_admin', 'mon', 'mgr', 'mds', 'osd']"
+${node.name} ansible_host=${node.mgmt_ip} public_ip=${node.public_ip} cluster_ip=${node.cluster_ip} internal_ip=${node.internal_ip} labels="['_admin', 'mon', 'mgr', 'mds', 'osd']"
 %{ else ~}
-${node.name} ansible_host=${node.mgmt_ip} public_ip=${node.public_ip} cluster_ip=${node.cluster_ip} labels="['rgw', 'osd']"
+${node.name} ansible_host=${node.mgmt_ip} public_ip=${node.public_ip} cluster_ip=${node.cluster_ip} internal_ip=${node.internal_ip} labels="['rgw', 'osd']"
 %{ endif ~}
 %{ endfor ~}
 
