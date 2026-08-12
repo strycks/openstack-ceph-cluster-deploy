@@ -2,6 +2,9 @@
   hosts: ceph_admin
   become: true
   gather_facts: false
+  vars:
+    osd_wait_retries: 60
+    osd_wait_delay: 5
   tasks:
     - name: Create ssd EC erasure-code profile
       ceph.automation.ceph_ec_profile:
@@ -11,12 +14,20 @@
         crush_device_class: ssd
         crush_failure_domain: host
         force: true
+      register: ssd_ec_profile
+      until: ssd_ec_profile.rc == 0
+      retries: "{{ osd_wait_retries }}"
+      delay: "{{ osd_wait_delay }}"
 
     - name: Create ssd EC erasure CRUSH rule
       ceph.automation.ceph_crush_rule:
         name: ssd-ec42
         rule_type: erasure
         profile: ssd-ec42
+      register: ssd_ec_rule
+      until: ssd_ec_rule.rc == 0
+      retries: "{{ osd_wait_retries }}"
+      delay: "{{ osd_wait_delay }}"
 
     - name: Create replicated CRUSH rule for HDD
       ceph.automation.ceph_crush_rule:
@@ -25,6 +36,10 @@
         bucket_root: default
         bucket_type: host
         device_class: hdd
+      register: replicated_hdd_rule
+      until: replicated_hdd_rule.rc == 0
+      retries: "{{ osd_wait_retries }}"
+      delay: "{{ osd_wait_delay }}"
 
     - name: Create replicated CRUSH rule for SSD
       ceph.automation.ceph_crush_rule:
@@ -33,6 +48,10 @@
         bucket_root: default
         bucket_type: host
         device_class: ssd
+      register: replicated_ssd_rule
+      until: replicated_ssd_rule.rc == 0
+      retries: "{{ osd_wait_retries }}"
+      delay: "{{ osd_wait_delay }}"
 
     - name: Create hdd EC erasure-code profile
       ceph.automation.ceph_ec_profile:
@@ -42,9 +61,17 @@
         crush_device_class: hdd
         crush_failure_domain: host
         force: true
+      register: hdd_ec_profile
+      until: hdd_ec_profile.rc == 0
+      retries: "{{ osd_wait_retries }}"
+      delay: "{{ osd_wait_delay }}"
 
     - name: Create hdd EC erasure CRUSH rule
       ceph.automation.ceph_crush_rule:
         name: hdd-ec42
         rule_type: erasure
         profile: hdd-ec42
+      register: hdd_ec_rule
+      until: hdd_ec_rule.rc == 0
+      retries: "{{ osd_wait_retries }}"
+      delay: "{{ osd_wait_delay }}"

@@ -39,6 +39,7 @@
         endpoints:
           - "http://10.10.2.250:80"
         default: true
+        master: true
 
     - name: Set realm and zonegroup on zone
       ceph.automation.radosgw_zone:
@@ -48,6 +49,12 @@
         endpoints:
           - "http://10.10.2.250:80"
         default: true
+        master: true
+
+    - name: Commit period after creating the master zone
+      ansible.builtin.command:
+        cmd: cephadm shell -- radosgw-admin period update --commit
+      changed_when: true
 
     - name: Get current zone config
       ansible.builtin.command:
