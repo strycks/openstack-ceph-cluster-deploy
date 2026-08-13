@@ -35,6 +35,11 @@
         erasure_profile: ssd-ec42
         application: rbd
 
+    # We don't have ec overwrites option in any module of ceph.automation yet
+    - name: Enable EC overwrites on the volumes SSD pool
+      ansible.builtin.command:
+        cmd: cephadm shell -- ceph osd pool set volumes-ssd allow_ec_overwrites true
+
     - name: Create volumes-ssd-meta pool
       ceph.automation.ceph_pool:
         name: volumes-ssd-meta

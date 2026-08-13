@@ -11,6 +11,11 @@
         erasure_profile: hdd-ec42
         application: rgw
 
+    # We don't have ec overwrites option in any module of ceph.automation yet
+    - name: Enable EC overwrites on the RGW data pool
+      ansible.builtin.command:
+        cmd: cephadm shell -- ceph osd pool set rgw-data allow_ec_overwrites true
+
     - name: Create rgw-metadata pool
       ceph.automation.ceph_pool:
         name: rgw-metadata

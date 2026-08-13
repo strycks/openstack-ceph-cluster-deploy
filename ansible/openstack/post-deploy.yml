@@ -17,6 +17,23 @@
         msg: "{{ post_deploy.stdout_lines[-20:] | join('\n') }}"
       when: post_deploy.stdout != ""
 
+    - name: Create the OpenStack client configuration directory
+      become: true
+      ansible.builtin.file:
+        path: /etc/openstack
+        state: directory
+        mode: "0755"
+
+    - name: Copy clouds.yaml for the OpenStack client
+      become: true
+      ansible.builtin.copy:
+        src: /etc/kolla/clouds.yaml
+        dest: /etc/openstack/clouds.yaml
+        remote_src: true
+        owner: root
+        group: ubuntu
+        mode: "0640"
+
     - name: Install OpenStack client
       become: true
       ansible.builtin.apt:

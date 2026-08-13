@@ -1,0 +1,22 @@
+# This playbook should only be run ONCE
+- name: Run init-runonce to seed demo resources
+  hosts: openstack_admin
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Copy the init-runonce script to the node
+      ansible.builtin.copy:
+        src: init-runonce
+        dest: /tmp/init-runonce.sh
+        mode: "0755"
+
+    - name: Run init-runonce
+      ansible.builtin.shell:
+        cmd: KOLLA_CONFIG_PATH=/etc/openstack bash /tmp/init-runonce.sh
+      register:
+        init_runonce
+
+    - name: Show init-runonce output (tail)
+      ansible.builtin.debug:
+        msg: "{{ init_runonce.stdout_lines[-20:] | join('\n') }}"
+      when: init_runonce.stdout != ""
