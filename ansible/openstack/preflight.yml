@@ -59,13 +59,22 @@
       when: not passwords_file.stat.exists
       become: false
 
-    - name: Copy globals.yml from repo
+    - name: Check whether external Ceph is already enabled on the VM
+      ansible.builtin.command:
+        cmd: "grep -q '^kolla_external_ceph: true' /etc/kolla/globals.yml"
+      register: external_ceph_enabled
+      changed_when: false
+      failed_when: false
+      become: false
+
+    - name: Copy globals.yml from repo when external Ceph is not enabled
       ansible.builtin.copy:
         src: globals.yml
         dest: /etc/kolla/globals.yml
         owner: ubuntu
         group: ubuntu
       become: false
+      when: external_ceph_enabled.rc != 0
 
     - name: Copy all-in-one inventory shipped with kolla-ansible
       ansible.builtin.copy:

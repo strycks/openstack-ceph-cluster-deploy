@@ -124,3 +124,68 @@
         owner: ubuntu
         group: ubuntu
         mode: "0640"
+
+    - name: Read Kolla passwords
+      ansible.builtin.slurp:
+        src: /etc/kolla/passwords.yml
+      register: kolla_passwords
+      no_log: true
+
+    - name: Extract the RGW Keystone password
+      ansible.builtin.set_fact:
+        ceph_rgw_keystone_password: "{{ (kolla_passwords.content | b64decode | regex_search('(?m)^ceph_rgw_keystone_password:\\s*(\\S+)', '\\1'))[0] }}"
+      no_log: true
+
+    - name: Enable external Ceph in the VM Kolla globals
+      ansible.builtin.replace:
+        path: /etc/kolla/globals.yml
+        regexp: '^(kolla_external_ceph:)\s*false'
+        replace: '\1 true'
+        owner: ubuntu
+        group: ubuntu
+
+- name: Configure RGW Keystone authentication
+  hosts: ceph_admin
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Apply RGW Keystone service specification
+      ceph.automation.ceph_orch_apply:
+        spec: |
+          service_type: rgw
+          service_id: myrgw
+          placement:
+            label: "rgw"
+          spec:
+            rgw_frontend_port: 8080
+          config:
+            rgw_keystone_api_version: "3"
+            rgw_keystone_url: http://10.10.3.250:5000
+            rgw_keystone_admin_domain: default
+            rgw_keystone_admin_project: service
+            rgw_keystone_admin_user: ceph_rgw
+            rgw_keystone_admin_password_path: /etc/ceph/keystone_admin_password
+            rgw_keystone_accepted_roles: member,admin
+            rgw_keystone_token_cache_size: "100"
+            rgw_keystone_implicit_tenants: "true"
+            rgw_swift_account_in_url: "true"
+          custom_configs:
+            - mount_path: /etc/ceph/keystone_admin_password
+              content: "{{ hostvars[groups['openstack_admin'][0]]['ceph_rgw_keystone_password'] }}"
+      no_log: true
+      register: rgw_spec_apply
+
+    - name: Redeploy RGW daemons with the Keystone configuration
+      ansible.builtin.command:
+        cmd: cephadm shell -- ceph orch redeploy rgw.myrgw
+      changed_when: true
+      when: rgw_spec_apply.changed
+
+    - name: Wait for RGW daemons to be running
+      ansible.builtin.command:
+        cmd: cephadm shell -- ceph orch ps --daemon-type rgw
+      register: rgw_ps
+      changed_when: false
+      until: "'running' in rgw_ps.stdout"
+      retries: 30
+      delay: 10

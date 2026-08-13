@@ -105,6 +105,8 @@
           service_id: myrgw
           placement:
             label: "rgw"
+          spec:
+            rgw_frontend_port: 8080
     - name: Apply RGW ingress
       ceph.automation.ceph_orch_apply:
         spec: |
