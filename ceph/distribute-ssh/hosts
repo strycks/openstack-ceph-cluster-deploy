@@ -1,6 +1,0 @@
-ceph-node1 ansible_host=10.10.2.21
-ceph-node2 ansible_host=10.10.2.22
-ceph-node3 ansible_host=10.10.2.23
-ceph-node4 ansible_host=10.10.2.24
-ceph-node5 ansible_host=10.10.2.25
-ceph-node6 ansible_host=10.10.2.26
