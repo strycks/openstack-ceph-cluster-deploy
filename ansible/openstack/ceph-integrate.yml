@@ -51,10 +51,11 @@
     - name: Build the ceph.conf variants for kolla
       ansible.builtin.set_fact:
         ceph_conf_content: "{{ ceph_conf_src.content | b64decode | regex_replace('(?m)^\\s+', '') }}"
-        ceph_conf_ssd_content: |
-          {{ ceph_conf_src.content | b64decode | regex_replace('(?m)^\\s+', '') }}
-          [client.cinder]
-          rbd default data pool = volumes-ssd
+
+    # Do not use yaml block scalar + jinja to build this!!
+    - name: Build the ssd ceph.conf variant for kolla
+      ansible.builtin.set_fact:
+        ceph_conf_ssd_content: "{{ ceph_conf_content }}\n[client.cinder]\nrbd default data pool = volumes-ssd"
 
 - name: Distribute Ceph keyrings to the OpenStack node
   hosts: openstack_admin
@@ -175,6 +176,7 @@
       no_log: true
       register: rgw_spec_apply
 
+    # Here are guardrails to ensure everything is running before deployment
     - name: Redeploy RGW daemons with the Keystone configuration
       ansible.builtin.command:
         cmd: cephadm shell -- ceph orch redeploy rgw.myrgw
