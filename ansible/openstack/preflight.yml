@@ -7,7 +7,7 @@
   tasks:
     - name: Install dependencies
       apt:
-        name: [git, python3-dev, libffi-dev, gcc, libssl-dev, libdbus-glib-1-dev, python3-venv]
+        name: [git, python3-dev, libffi-dev, gcc, libssl-dev, libdbus-glib-1-dev, python3-venv, python3-openstackclient]
         state: present
         update_cache: true
       become: true

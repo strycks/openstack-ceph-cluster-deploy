@@ -33,10 +33,3 @@
         owner: root
         group: ubuntu
         mode: "0640"
-
-    - name: Install OpenStack client
-      become: true
-      ansible.builtin.apt:
-        name: python3-openstackclient
-        state: present
-        update_cache: true
