@@ -1,3 +1,5 @@
+# IMPORTANT NOTE: THIS BRANCH ONLY CONTAINS THE DEPLOYMENT FOR CEPH CLUSTER, FOR OPENSTACK-CEPH PLEASE VISIT MASTER BRANCH.
+
 # Automated OpenStack-Ceph Provisioning
 
 Automated provisioning of OpenStack and Ceph on libvirt VMs: Terraform
