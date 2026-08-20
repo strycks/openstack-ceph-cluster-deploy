@@ -18,7 +18,6 @@ variable "nodes" {
     role       = string
   }))
   default = {
-    "openstack-node1" = { vcpu = 8, memory_mib = 16384, role = "openstack" }
     "ceph-node1"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
     "ceph-node2"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
     "ceph-node3"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
@@ -62,16 +61,17 @@ variable "disk_size_root" {
   default     = 42949672960
 }
 
+# This disk is mainly used for bluestore/wal
 variable "disk_size_ssd_5g" {
   description = "SSD disk size in bytes (5 GiB)."
   type        = number
   default     = 5368709120
 }
 
-variable "disk_size_ssd_10g" {
-  description = "SSD disk size in bytes (10 GiB)."
+variable "disk_size_ssd_25g" {
+  description = "SSD disk size in bytes (25 GiB)."
   type        = number
-  default     = 10737418240
+  default     = 26843545600
 }
 
 variable "disk_size_hdd_50g" {
@@ -80,6 +80,11 @@ variable "disk_size_hdd_50g" {
   default     = 53687091200
 }
 
+variable "disk_size_hdd_75g" {
+  description = "HDD disk size in bytes (75 GiB)."
+  type        = number
+  default     = 80530636800
+}
 // SSH +  image
 
 variable "base_image_url" {
@@ -106,24 +111,6 @@ variable "net_mgmt" {
   description = "Management Network."
   type        = string
   default     = "mgmt-net"
-}
-
-variable "net_os_internal" {
-  description = "Internal Network for OpenStack."
-  type        = string
-  default     = "os-internal-net"
-}
-
-variable "net_os_tenant" {
-  description = "Tenant Network managed by Neutron."
-  type        = string
-  default     = "os-tenant-net"
-}
-
-variable "net_os_external" {
-  description = "External Network for OpenStack."
-  type        = string
-  default     = "os-external-net"
 }
 
 variable "net_ceph_public" {

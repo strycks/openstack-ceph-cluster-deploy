@@ -7,11 +7,7 @@ ethernets:
     dhcp4: false
     dhcp6: false
     addresses: ["10.10.2.${ip_idx}/24"]
-  ens5: # os internal
-    dhcp4: false
-    dhcp6: false
-    addresses: ["10.10.3.${ip_idx}/24"]
-  ens6: # ceph priv
+  ens5: # ceph priv
     dhcp4: false
     dhcp6: false
     addresses: ["10.10.6.${ip_idx}/24"]

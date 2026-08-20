@@ -49,30 +49,6 @@ resource "libvirt_network" "ceph_public" {
   addresses = ["10.10.2.0/24"]
 }
 
-resource "libvirt_network" "os_internal" {
-  name      = var.net_os_internal
-  mode      = "none"
-  autostart = true
-  addresses = ["10.10.3.0/24"]
-}
-
-resource "libvirt_network" "os_external" {
-  name      = var.net_os_external
-  mode      = "none"
-  autostart = true
-  addresses = ["10.10.4.0/24"]
-}
-
-resource "libvirt_network" "os_tenant" {
-  name      = var.net_os_tenant
-  mode      = "nat"
-  autostart = true
-  addresses = ["10.10.5.0/24"]
-  dhcp {
-    enabled = false
-  }
-}
-
 resource "libvirt_network" "ceph_cluster" {
   name      = var.net_ceph_cluster
   mode      = "none"
@@ -111,12 +87,12 @@ resource "libvirt_volume" "osd_ssd_5g" {
   format = "qcow2"
 }
 
-resource "libvirt_volume" "osd_ssd_10g" {
+resource "libvirt_volume" "osd_ssd_25g" {
   for_each = { for k, v in var.nodes : k => v if v.role == "ceph" }
 
   name   = "${var.name_prefix}-${each.key}-osd-ssd2.qcow2"
   pool   = libvirt_pool.ssd.name
-  size   = var.disk_size_ssd_10g
+  size   = var.disk_size_ssd_25g
   format = "qcow2"
 }
 
@@ -126,6 +102,15 @@ resource "libvirt_volume" "osd_hdd_50g" {
   name   = "${var.name_prefix}-${each.key}-osd-hdd1.qcow2"
   pool   = libvirt_pool.hdd.name
   size   = var.disk_size_hdd_50g
+  format = "qcow2"
+}
+
+resource "libvirt_volume" "osd_hdd_75g" {
+  for_each = { for k, v in var.nodes : k => v if v.role == "ceph" }
+
+  name   = "${var.name_prefix}-${each.key}-osd-hdd2.qcow2"
+  pool   = libvirt_pool.hdd.name
+  size   = var.disk_size_hdd_75g
   format = "qcow2"
 }
 
