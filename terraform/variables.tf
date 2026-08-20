@@ -18,12 +18,12 @@ variable "nodes" {
     role       = string
   }))
   default = {
-    "ceph-node1"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
-    "ceph-node2"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
-    "ceph-node3"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
-    "ceph-node4"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
-    "ceph-node5"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
-    "ceph-node6"      = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node1" = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node2" = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node3" = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node4" = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node5" = { vcpu = 4, memory_mib = 4096, role = "ceph" }
+    "ceph-node6" = { vcpu = 4, memory_mib = 4096, role = "ceph" }
   }
 }
 

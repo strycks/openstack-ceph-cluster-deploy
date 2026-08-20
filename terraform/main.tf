@@ -79,7 +79,7 @@ resource "libvirt_volume" "root" {
 # --- Additional block storage
 
 resource "libvirt_volume" "osd_ssd_5g" {
-  for_each = { for k, v in var.nodes : k => v if v.role == "ceph" }
+  for_each = var.nodes
 
   name   = "${var.name_prefix}-${each.key}-osd-ssd1.qcow2"
   pool   = libvirt_pool.ssd.name
@@ -88,7 +88,7 @@ resource "libvirt_volume" "osd_ssd_5g" {
 }
 
 resource "libvirt_volume" "osd_ssd_25g" {
-  for_each = { for k, v in var.nodes : k => v if v.role == "ceph" }
+  for_each = var.nodes
 
   name   = "${var.name_prefix}-${each.key}-osd-ssd2.qcow2"
   pool   = libvirt_pool.ssd.name
@@ -97,7 +97,7 @@ resource "libvirt_volume" "osd_ssd_25g" {
 }
 
 resource "libvirt_volume" "osd_hdd_50g" {
-  for_each = { for k, v in var.nodes : k => v if v.role == "ceph" }
+  for_each = var.nodes
 
   name   = "${var.name_prefix}-${each.key}-osd-hdd1.qcow2"
   pool   = libvirt_pool.hdd.name
@@ -106,7 +106,7 @@ resource "libvirt_volume" "osd_hdd_50g" {
 }
 
 resource "libvirt_volume" "osd_hdd_75g" {
-  for_each = { for k, v in var.nodes : k => v if v.role == "ceph" }
+  for_each = var.nodes
 
   name   = "${var.name_prefix}-${each.key}-osd-hdd2.qcow2"
   pool   = libvirt_pool.hdd.name
@@ -122,8 +122,7 @@ resource "libvirt_cloudinit_disk" "init" {
   name = "${var.name_prefix}-${each.key}-cloudinit.iso"
   pool = libvirt_pool.ssd.name
 
-  user_data = templatefile(
-    each.value.role == "openstack" ? "${path.module}/cloud-init/openstack/user-data.tftpl" : "${path.module}/cloud-init/ceph/user-data.tftpl",
+  user_data = templatefile("${path.module}/cloud-init/user-data.tftpl",
     {
       hostname       = each.key
       ssh_username   = var.ssh_username
@@ -131,11 +130,9 @@ resource "libvirt_cloudinit_disk" "init" {
     }
   )
 
-  network_config = templatefile(
-    each.value.role == "openstack" ? "${path.module}/cloud-init/openstack/net-config.tftpl" : "${path.module}/cloud-init/ceph/net-config.tftpl",
+  network_config = templatefile("${path.module}/cloud-init/net-config.tftpl",
     {
-      ip_idx = 0
-      ip_idx = each.value.role == "ceph" ? tonumber(replace(each.key, "ceph-node", "")) + 20 : 0 # we will not use it in openstack
+      ip_idx = tonumber(replace(each.key, "ceph-node", "")) + 20
     }
   )
 }
@@ -164,28 +161,7 @@ resource "libvirt_domain" "vm" {
   }
 
   network_interface {
-    network_name = var.net_os_internal
-  }
-
-  dynamic "network_interface" {
-    for_each = each.value.role == "openstack" ? [1] : []
-    content {
-      network_name = var.net_os_external
-    }
-  }
-
-  dynamic "network_interface" {
-    for_each = each.value.role == "openstack" ? [1] : []
-    content {
-      network_name = var.net_os_tenant
-    }
-  }
-
-  dynamic "network_interface" {
-    for_each = each.value.role == "ceph" ? [1] : []
-    content {
-      network_name = var.net_ceph_cluster
-    }
+    network_name = var.net_ceph_cluster
   }
 
   disk {
@@ -193,29 +169,25 @@ resource "libvirt_domain" "vm" {
     scsi      = "true"
   }
 
-  dynamic "disk" {
-    for_each = each.value.role == "ceph" ? [1] : []
-    content {
-      volume_id = libvirt_volume.osd_ssd_5g[each.key].id
-      scsi      = "true"
-    }
+  disk {
+    volume_id = libvirt_volume.osd_ssd_5g[each.key].id
+    scsi      = "true"
   }
 
-  dynamic "disk" {
-    for_each = each.value.role == "ceph" ? [1] : []
-    content {
-      volume_id = libvirt_volume.osd_ssd_10g[each.key].id
-      scsi      = "true"
-    }
+  disk {
+    volume_id = libvirt_volume.osd_ssd_25g[each.key].id
+    scsi      = "true"
   }
 
-  dynamic "disk" {
-    for_each = each.value.role == "ceph" ? [1] : []
-    content {
-      volume_id = libvirt_volume.osd_hdd_50g[each.key].id
-    }
+  disk {
+    volume_id = libvirt_volume.osd_hdd_50g[each.key].id
   }
 
+  disk {
+    volume_id = libvirt_volume.osd_hdd_75g[each.key].id
+  }
+
+  # This one is used to alter rotation rate so that the vm can correctly identify SSDs.
   xml {
     xslt = <<-EOF
     <?xml version="1.0" ?>
@@ -250,9 +222,6 @@ resource "libvirt_domain" "vm" {
 
   depends_on = [
     libvirt_network.mgmt,
-    libvirt_network.os_internal,
-    libvirt_network.os_external,
-    libvirt_network.os_tenant,
     libvirt_network.ceph_public,
     libvirt_network.ceph_cluster
   ]
