@@ -1,7 +1,11 @@
+---
 - name: Create CRUSH rules and EC profile
   hosts: ceph_admin
   become: true
   gather_facts: false
+  environment:
+    CEPH_CONTAINER_IMAGE: "{{ ceph_container_image }}"
+    CEPH_CONTAINER_BINARY: "{{ ceph_container_binary }}"
   vars:
     osd_wait_retries: 60
     osd_wait_delay: 5

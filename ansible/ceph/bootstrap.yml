@@ -1,7 +1,11 @@
+---
 - name: Bootstrap Ceph cluster
   hosts: ceph_admin
   become: true
   gather_facts: true
+  environment:
+    CEPH_CONTAINER_IMAGE: "{{ ceph_container_image }}"
+    CEPH_CONTAINER_BINARY: "{{ ceph_container_binary }}"
   tasks:
     - name: Check whether this host is already bootstrapped. This is a temporary fix, because cephadm_bootstrap is not idempotent!
       ansible.builtin.stat:
@@ -11,13 +15,14 @@
       ceph.automation.cephadm_bootstrap:
         mon_ip: "{{ public_ip }}"
         cluster_network: "{{ net_ceph_cluster }}"
+        image: "{{ ceph_container_image }}"
       when: not ceph_conf_stat.stat.exists
       register: bootstrap_result
     - name: Show bootstrap result
-      debug:
+      ansible.builtin.debug:
         var: bootstrap_result
     - name: Fetch cluster's pubkey
-      slurp:
+      ansible.builtin.slurp:
         src: /etc/ceph/ceph.pub
       register: ceph_pub_key
 - name: Distribute SSH key pair
@@ -25,13 +30,16 @@
   become: true
   tasks:
     - name: Add cluster public key to authorized_key of all nodes
-      authorized_key:
+      ansible.posix.authorized_key:
         user: root
         state: present
         key: "{{ hostvars[groups['ceph_admin'][0]]['ceph_pub_key']['content'] | b64decode }}"
 - name: Add hosts to cluster
   hosts: ceph_admin
   become: true
+  environment:
+    CEPH_CONTAINER_IMAGE: "{{ ceph_container_image }}"
+    CEPH_CONTAINER_BINARY: "{{ ceph_container_binary }}"
   tasks:
     - name: Add hosts to cluster
       ceph.automation.ceph_orch_host:
@@ -45,6 +53,9 @@
   hosts: ceph_admin
   become: true
   gather_facts: false
+  environment:
+    CEPH_CONTAINER_IMAGE: "{{ ceph_container_image }}"
+    CEPH_CONTAINER_BINARY: "{{ ceph_container_binary }}"
   tasks:
     - name: Apply mon services
       ceph.automation.ceph_orch_apply:

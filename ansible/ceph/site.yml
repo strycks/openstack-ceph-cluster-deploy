@@ -1,3 +1,4 @@
+---
 - name: Preflight - dependencies and SSH setup
   ansible.builtin.import_playbook: preflight.yml
 
@@ -7,11 +8,5 @@
 - name: Create CRUSH rules and EC profiles
   ansible.builtin.import_playbook: crush_rules.yml
 
-- name: Create RBD pools
-  ansible.builtin.import_playbook: rbd.yml
-
 - name: Deploy RGW pools, zone, daemon, and ingress
   ansible.builtin.import_playbook: rgw.yml
-
-- name: Deploy CephFS pools, filesystem, and MDS
-  ansible.builtin.import_playbook: cephfs.yml

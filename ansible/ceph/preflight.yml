@@ -1,15 +1,16 @@
+---
 - name: Ceph preflight
   hosts: ceph
   become: true
   gather_facts: true
   tasks:
     - name: Install prerequisites
-      apt:
+      ansible.builtin.apt:
         name: [cephadm, chrony, ceph-common]
         state: present
         update_cache: true
     - name: Ensure chrony is running
-      service:
+      ansible.builtin.service:
         name: chrony
         state: started
         enabled: true
