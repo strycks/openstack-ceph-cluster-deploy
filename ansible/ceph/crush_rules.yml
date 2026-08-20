@@ -6,7 +6,7 @@
     osd_wait_retries: 60
     osd_wait_delay: 5
   tasks:
-    - name: Create ssd EC erasure-code profile
+    - name: Create ssd EC42 erasure-code profile
       ceph.automation.ceph_ec_profile:
         name: ssd-ec42
         k: "4"
@@ -19,7 +19,7 @@
       retries: "{{ osd_wait_retries }}"
       delay: "{{ osd_wait_delay }}"
 
-    - name: Create ssd EC erasure CRUSH rule
+    - name: Create ssd EC42 erasure CRUSH rule
       ceph.automation.ceph_crush_rule:
         name: ssd-ec42
         rule_type: erasure
@@ -53,7 +53,7 @@
       retries: "{{ osd_wait_retries }}"
       delay: "{{ osd_wait_delay }}"
 
-    - name: Create hdd EC erasure-code profile
+    - name: Create hdd EC42 erasure-code profile
       ceph.automation.ceph_ec_profile:
         name: hdd-ec42
         k: "4"
@@ -66,11 +66,35 @@
       retries: "{{ osd_wait_retries }}"
       delay: "{{ osd_wait_delay }}"
 
-    - name: Create hdd EC erasure CRUSH rule
+    - name: Create hdd EC42 erasure CRUSH rule
       ceph.automation.ceph_crush_rule:
         name: hdd-ec42
         rule_type: erasure
         profile: hdd-ec42
+      register: hdd_ec_rule
+      until: hdd_ec_rule.rc == 0
+      retries: "{{ osd_wait_retries }}"
+      delay: "{{ osd_wait_delay }}"
+
+    # This one's crush failure domain is osd only because i don't have enough resource for 11+ nodes ceph cluster
+    - name: Create hdd EC83 erasure-code profile
+      ceph.automation.ceph_ec_profile:
+        name: hdd-ec83
+        k: "8"
+        m: "3"
+        crush_device_class: hdd
+        crush_failure_domain: osd
+        force: true
+      register: hdd_ec_profile
+      until: hdd_ec_profile.rc == 0
+      retries: "{{ osd_wait_retries }}"
+      delay: "{{ osd_wait_delay }}"
+
+    - name: Create hdd EC83 erasure CRUSH rule
+      ceph.automation.ceph_crush_rule:
+        name: hdd-ec83
+        rule_type: erasure
+        profile: hdd-ec83
       register: hdd_ec_rule
       until: hdd_ec_rule.rc == 0
       retries: "{{ osd_wait_retries }}"

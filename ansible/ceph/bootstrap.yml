@@ -60,21 +60,38 @@
           service_name: mgr
           placement:
             label: "mgr"
-    - name: Apply tier-hdd osd services
+    - name: Apply tier-small-hdd osd services
       ceph.automation.ceph_orch_apply:
         spec: |
           service_type: osd
-          service_id: tier-hdd
+          service_id: tier-small-hdd
           unmanaged: false
           placement:
             label: "osd"
           spec:
             data_devices:
+              size: "50GB"
               rotational: 1
             db_devices:
               size: "5GB"
               rotational: 0
-            block_db_size: "4.9GB"
+            block_db_size: "2GB"
+    - name: Apply tier-large-hdd osd services
+      ceph.automation.ceph_orch_apply:
+        spec: |
+          service_type: osd
+          service_id: tier-large-hdd
+          unmanaged: false
+          placement:
+            label: "osd"
+          spec:
+            data_devices:
+              size: "75GB"
+              rotational: 1
+            db_devices:
+              size: "5GB"
+              rotational: 0
+            block_db_size: "2.9GB"
     - name: Apply tier-ssd osd services
       ceph.automation.ceph_orch_apply:
         spec: |
@@ -85,5 +102,5 @@
             label: "osd"
           spec:
             data_devices:
-              size: "10GB"
+              size: "25GB"
               rotational: 0

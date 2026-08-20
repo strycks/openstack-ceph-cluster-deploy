@@ -3,18 +3,45 @@
   become: true
   gather_facts: false
   tasks:
-    - name: Create rgw-data erasure-coded pool
+    - name: Create rgw-data-standard erasure-coded pool
       ceph.automation.ceph_pool:
-        name: rgw-data
+        name: rgw-data-standard
         pool_type: erasure
-        rule_name: hdd-ec42
-        erasure_profile: hdd-ec42
+        rule_name: ssd-ec42
+        erasure_profile: ssd-ec42
+        pg_autoscale_mode: auto
         application: rgw
 
     # We don't have ec overwrites option in any module of ceph.automation yet
     - name: Enable EC overwrites on the RGW data pool
       ansible.builtin.command:
-        cmd: cephadm shell -- ceph osd pool set rgw-data allow_ec_overwrites true
+        cmd: cephadm shell -- ceph osd pool set rgw-data-standard allow_ec_overwrites true
+
+    - name: Create rgw-data-standard-ia erasure-coded pool
+      ceph.automation.ceph_pool:
+        name: rgw-data-standard-ia
+        pool_type: erasure
+        rule_name: hdd-ec42
+        erasure_profile: hdd-ec42
+        pg_autoscale_mode: auto
+        application: rgw
+
+    - name: Enable EC overwrites on the RGW data pool
+      ansible.builtin.command:
+        cmd: cephadm shell -- ceph osd pool set rgw-data-standard-ia allow_ec_overwrites true
+
+    - name: Create rgw-data-glacier-ir erasure-coded pool
+      ceph.automation.ceph_pool:
+        name: rgw-data-glacier-ir
+        pool_type: erasure
+        rule_name: hdd-ec83
+        erasure_profile: hdd-ec83
+        pg_autoscale_mode: auto
+        application: rgw
+
+    - name: Enable EC overwrites on the RGW data pool
+      ansible.builtin.command:
+        cmd: cephadm shell -- ceph osd pool set rgw-data-glacier-ir allow_ec_overwrites true
 
     - name: Create rgw-metadata pool
       ceph.automation.ceph_pool:
@@ -81,7 +108,9 @@
                   'index_pool': 'rgw-index',
                   'data_extra_pool': 'rgw-metadata',
                   'storage_classes': {
-                    'STANDARD': { 'data_pool': 'rgw-data' }
+                    'STANDARD': { 'data_pool': 'rgw-data-standard' },
+                    'STANDARD_IA': { 'data_pool': 'rgw-data-standard-ia', 'compression_type': 'zstd' },
+                    'GLACIER_IR': { 'data_pool': 'rgw-data-glacier-ir', 'compression_type': 'zstd' }
                   },
                   'index_type': 0,
                   'inline_data': true
@@ -90,7 +119,7 @@
             }, recursive=True)
           }}
 
-    - name: Apply zone config with custom pools
+    - name: Apply zone config with custom storage classes
       ceph.automation.radosgw_zone:
         name: default
         realm: default
